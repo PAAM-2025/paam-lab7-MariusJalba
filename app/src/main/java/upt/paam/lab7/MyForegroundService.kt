@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import android.app.PendingIntent
 
 class MyForegroundService : Service() {
 
@@ -47,16 +48,39 @@ class MyForegroundService : Service() {
         }
     }
 
-    private fun buildNotification(msg: String, progress: Int): Notification {
-        // TODO 2: Create a NotificationCompat.Builder inside your service
-        //   - Use "service_channel" as the channelId
-        //   - Set a title, text, and small icon
-        //   - Mark the notification as ongoing (persistent)`
-        return TODO("Provide the return value")
+//   private fun buildNotification(msg: String, progress: Int): Notification {
+//        // TODO 2: Create a NotificationCompat.Builder inside your service
+//        //   - Use "service_channel" as the channelId
+//        //   - Set a title, text, and small icon
+//        //   - Mark the notification as ongoing (persistent)`
+//
+//        return NotificationCompat.Builder(this, "service_channel")
+//            .setContentTitle("My foreground service")
+//            .setContentText(msg)
+//            .setSmallIcon(android.R.drawable.ic_media_play)
+//            .setOngoing(true)
+//            .setOnlyAlertOnce(true)
+//            .build()
+//    }
+    // TODO 3: Create a different notification with NotificationCompat.Builder inside your service
+    // that opens a certain screen when you press on it. Comment one implementation when you're done
 
-        // TODO 3: Create a different notification with NotificationCompat.Builder inside your service
-        // that opens a certain screen when you press on it. Comment one implementation when you're done
+    private fun buildNotification(msg:String, progress: Int): Notification{
+        val intent = Intent(this, MainActivity::class.java).apply{
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pendingFlags = PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+        val pendingIntent = PendingIntent.getActivity(this,0,intent,pendingFlags)
+        return NotificationCompat.Builder(this,"service_channel")
+            .setContentTitle("My Foreground Service")
+            .setContentText(msg)
+            .setSmallIcon(android.R.drawable.ic_media_play)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setContentIntent(pendingIntent)
+            .build()
     }
+
     private fun updateNotification(msg: String, progress: Int) {
         val manager = NotificationManagerCompat.from(this)
         val notification = buildNotification(msg, progress)
